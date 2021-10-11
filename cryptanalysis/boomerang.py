@@ -50,7 +50,7 @@ def computeFeistelBoomerangDifferential(cipher, parameters):
     while not search.reachedTimelimit(start_time, parameters["timelimit"]):
         boomerangProb += feistelBoomerangTrailSearch(cipher, parameters, boomerangProb)
         print("---")
-        print("Improved boomerang probability" + str(math.log(boomerangProb, 2)))
+        print("Improved boomerang probability = " + str(math.log(boomerangProb, 2)))
 
     return 0
 
@@ -311,7 +311,10 @@ def feistelBoomerangTrailSearch(cipher, parameters, boomerangProb = 0):
     #After searching for all possible optimal lower trails for the given upper trail, block upper trail
     print("----")
     print("Completed trail search with boomerang probability of {}".format(math.log(boomerangProb, 2)))
+    #Block upper trail to find another upper trail
     parameters["blockedUpperCharacteristics"].append(upperCharacteristic)
+    #Clear lower trails because the same lower trails can be matched to a different upper trail
+    parameters["blockedLowerCharacteristics"].clear()
 
     return boomerangProb
 
