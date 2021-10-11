@@ -1,0 +1,14 @@
+# Differential search for WARP (endweight = rounds+64)
+---
+cipher: warp
+uppertrail: 10
+lowertrail: 9
+uweight: 34
+lweight: 28
+endweight: 35 #set to the higher weight + 1
+lowerlimit: 32 #cluster up to +4 (128/32=4) - Will be clustered often, set to a conservative value
+upperlimit: 16 #cluster up to +8 (128/16=8) - Upper will not be clustered too often, can be higher
+timelimit: 86400 #24 hours
+wordsize: 128
+mode: 5
+...
