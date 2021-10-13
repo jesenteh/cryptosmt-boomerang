@@ -30,27 +30,40 @@ def computeFeistelBoomerangDifferential(cipher, parameters):
         parameters["perm"] = cipher.getPerm()
     except:
         print("----")
-        print(sys.exc_info()[0], "occurred.")
-        print("Required boomerang functions do not exist.")
-        print("Please add getSbox, getSboxSize, getDesign in cipher definition.")
+        print(sys.exc_info()[0], "occurred")
+        print("Required boomerang functions do not exist")
+        print("Please add getSbox, getSboxSize, getDesign in cipher definition")
         quit()
-
-    print("----")
-    print("Running initial boomerang search")
-    print("----")
     start_time = time.time()
     createBCT(parameters, cipher)
-
-    #Finds the input and output differences of the entire boomerang then starts enumerating
-    boomerangProb = feistelBoomerangTrailSearch(cipher, parameters)
-
-    #Compute other boomerang trails for the given input and output differences
-    print("----")
-    print("Initial boomerang found. Finding other trails.")
     while not search.reachedTimelimit(start_time, parameters["timelimit"]):
-        boomerangProb += feistelBoomerangTrailSearch(cipher, parameters, boomerangProb)
-        print("---")
-        print("Improved boomerang probability = " + str(math.log(boomerangProb, 2)))
+        print("----")
+        print("Running initial boomerang search")
+        print("----")
+        #Finds the input and output differences of the entire boomerang then starts enumerating
+        boomerangProb = feistelBoomerangTrailSearch(cipher, parameters)
+        #Compute other boomerang trails for the given input and output differences
+        print("----")
+        print("Initial boomerang found. Finding other trails")
+        while not search.reachedTimelimit(start_time, parameters["timelimit"]):
+            prob = feistelBoomerangTrailSearch(cipher, parameters, boomerangProb)
+            if prob == 99: #No more upper trails for the given input
+                break
+            elif prob == 0: #No lower trail found for the given limits
+                print("Trying a different upper trail")
+            else:
+                boomerangProb = prob
+                print("---")
+                print("Improved boomerang probability = " + str(math.log(boomerangProb, 2)))
+        print("\n----")
+        print("Boomerang search completed for the following:")
+        print("X0 = {}".format(parameters["boomerangVariables"]["X0"]))
+        print("X{} = {}".format(parameters["lowertrail"], parameters["boomerangVariables"]["X{}".format(parameters["lowertrail"])]))
+        print("Final boomerang probability = " + str(math.log(boomerangProb, 2)))
+        print("----\n")
+        
+        #Clear the start/end points to start new boomerang search
+        parameters["boomerangVariables"].clear()
 
     return 0
 
@@ -232,7 +245,7 @@ def boomerangDifferential(cipher, parameters, input, output, weight, boomerangFa
 
 def feistelBoomerangTrailSearch(cipher, parameters, boomerangProb = 0):
     """
-    Automatically enumerate boomerang differentials starting from a fixed upper trail.
+    Automatically enumerate boomerang differentials starting from a fixed upper trail
     """
     switchProb = 0
     alpha = ""
@@ -253,8 +266,12 @@ def feistelBoomerangTrailSearch(cipher, parameters, boomerangProb = 0):
         alpha = upperCharacteristic.getInputDiff()
         beta = upperCharacteristic.getOutputDiff()
     except:
-        print("No characteristic found for the given limits.")
-        quit()
+        print("No characteristic found for the given limits")
+        #If no more upper characteristics can be found, best boomerang differential for the given input has been found
+        parameters["uweight"] = parameters["sweight"]
+        parameters["blockedUpperCharacteristics"].append(upperCharacteristic)
+        parameters["blockedLowerCharacteristics"].clear()
+        return 99
     upperWeight = parameters["sweight"] #Store optimal weight found for upper trail
 
     #Keep searching for another optimal lower characteristic, otherwise move on to different upper
@@ -274,8 +291,14 @@ def feistelBoomerangTrailSearch(cipher, parameters, boomerangProb = 0):
         lowerCharacteristic = boomerangTrail(cipher, parameters, "lower", beta)
 
         #Store output difference
-        gamma = lowerCharacteristic.getInputDiff()
-        delta = lowerCharacteristic.getOutputDiff()
+        try:
+            gamma = lowerCharacteristic.getInputDiff()
+            delta = lowerCharacteristic.getOutputDiff()
+        except:
+            print("No characteristic found for the given limits")
+            parameters["blockedUpperCharacteristics"].append(upperCharacteristic)   
+            parameters["blockedLowerCharacteristics"].clear()
+            return 0
         lowerWeight = parameters["sweight"] #Store optimal weight found for lower trail
 
         #Block characteristics
@@ -305,17 +328,16 @@ def feistelBoomerangTrailSearch(cipher, parameters, boomerangProb = 0):
             print("Boomerang probability: {}".format(math.log(boomerangProb, 2)))
             print("----")
         else:
-            print("Switching invalid, search for new boomerang differential.")
+            print("Switching invalid, search for new boomerang differential")
             print("----")
    
     #After searching for all possible optimal lower trails for the given upper trail, block upper trail
-    print("----")
     print("Completed trail search with boomerang probability of {}".format(math.log(boomerangProb, 2)))
     #Block upper trail to find another upper trail
     parameters["blockedUpperCharacteristics"].append(upperCharacteristic)
     #Clear lower trails because the same lower trails can be matched to a different upper trail
     parameters["blockedLowerCharacteristics"].clear()
-
+    parameters["uweight"] = upperWeight
     return boomerangProb
 
 
