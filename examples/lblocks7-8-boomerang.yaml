@@ -1,0 +1,14 @@
+# Differential search for WARP (endweight = rounds+64)
+---
+cipher: lblocks
+uppertrail: 7
+lowertrail: 8
+uweight: 16
+lweight: 22
+endweight: 25 #set to the higher weight
+lowerlimit: 64 #No clustering
+upperlimit: 64 #No need to cluster
+timelimit: 259200 #24 hours
+wordsize: 64
+mode: 5
+...
