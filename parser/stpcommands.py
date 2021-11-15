@@ -23,6 +23,8 @@ def blockCharacteristic(stpfile, characteristic, wordsize):
                       var_name.startswith('y') or
                       var_name.startswith('s') or
                       var_name.startswith('X') or
+                      var_name.startswith('Y') or
+                      var_name.startswith('K') or
                       var_name.startswith('v')}
 
     blockingStatement = "ASSERT(NOT("
