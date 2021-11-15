@@ -13,7 +13,7 @@ from cryptanalysis import search, boomerang
 from ciphers import (simon, speck, simonlinear, keccak, keccakdiff,
                      siphash, simonrk, chaskeymachalf, simonkeyrc,
                      ketje, ascon, salsa, chacha, skinny, skinnyrk, gimli,
-                     present, craft, craftlinear, trifle, trifle, triflerk, twine, warp)
+                     present, craft, craftlinear, trifle, trifle, triflerk, twine, warp, warprk, lblocks, lblock)
 from config import PATH_STP, PATH_CRYPTOMINISAT, PATH_BOOLECTOR
 
 from argparse import ArgumentParser, RawTextHelpFormatter
@@ -49,7 +49,10 @@ def startsearch(tool_parameters):
                     "trifle" : trifle.TrifleCipher(),
                     "triflerk" : triflerk.TrifleRK(),
                     "twine" : twine.TwineCipher(),
-                    "warp" : warp.WarpCipher()}
+                    "warp" : warp.WarpCipher(),
+                    "warprk" : warprk.WarpRKCipher(),
+                    "lblocks" : lblocks.LBlockSCipher(),
+                    "lblock" : lblock.LBlockCipher()}
 
     cipher = None
 
@@ -125,7 +128,7 @@ def loadparameters(args):
               "fixedVariables" : {},
               "boomerangVariables" : {},
               "sboxSize" : 4,
-              "design" : "spn",
+              "design" : "gfn",
               "sbox" : [],
               "perm" : [],
               "bct" : [[0] * 16 for _ in range(16)],
