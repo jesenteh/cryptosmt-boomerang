@@ -25,7 +25,7 @@ mkdir build
 cd build
 sudo cmake ../ && sudo make && sudo make install
 
-4. Go back to "tools" directory, go into the "stp" directory and install STP along with all required packages:
+5. Go back to "tools" directory, go into the "stp" directory and install STP along with all required packages:
 
 cd $home && cd tools && cd stp
 sudo apt-get install -y bison flex
@@ -33,11 +33,11 @@ mkdir build
 cd build
 sudo cmake ../ && sudo make && sudo make install
 
-5. Go back to "tools" directory, go into the "cryptosmt" directory and install necessary packages:
+6. Go back to "tools" directory, go into the "cryptosmt" directory and install necessary packages:
 
 cd $home && cd tools && cd cryptosmt
 sudo apt-get install -y python3-pip
 sudo pip3 install pyyaml
 
-6. Clean workspace
+7. Clean workspace
 sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/*
