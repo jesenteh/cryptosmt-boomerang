@@ -1,7 +1,6 @@
 """
 @author: jesenteh
 Date: 9 December, 2021
-
 This Python script implements WARP and checks its correctness by using the test vectors provided in WARP's design specification.
 It also computationally verifies the differential probability of a 15-round related-key differential found for WARP.
 """
