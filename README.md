@@ -6,7 +6,11 @@ Instructions:
 2. Copy all files from this repository into their respective folders. Some of the files include fixes to support TWINE and WARP.
 3. Run cryptosmt-boomerang.py instead of cryptosmt.py.
 4. See the input files under "examples" to understand how to setup and run the boomerang search.
-5. Some additional functions for the boomerang search need to be added to the cipher definition. See ciphers/warp.py for examples:
+5. Sample execution:
+```
+    python3 cryptosmt-boomerang.py --input ./search/twine-7-7-boomerang.yaml
+```
+7. To use the boomerang search for other ciphers, additional functions need to be added to the cipher definition. See ciphers/warp.py for examples:
 ```
     def getSbox(self):
         #Returns sBox - Required for boomerang search
