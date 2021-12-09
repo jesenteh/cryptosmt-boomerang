@@ -1,5 +1,5 @@
 # CryptoSMT-Boomerang
-An add-on to the CryptoSMT tool to support automatic boomerang search.
+New module for the CryptoSMT tool to support automatic boomerang search.
 
 Instructions:
 1. Install the CryptoSMT tool (https://github.com/kste/cryptosmt) - See installation.txt.
