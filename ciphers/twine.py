@@ -3,7 +3,7 @@ Created on Mar 2, 2017
 
 @author: ralph
 
-Edited with additional boomerang search functions - Je Sen
+Edited with additional boomerang search functions - jesenteh
 '''
 
 from parser import stpcommands
