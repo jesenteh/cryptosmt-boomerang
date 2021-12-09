@@ -2,6 +2,8 @@
 Created on Mar 2, 2017
 
 @author: ralph
+
+Edited with additional boomerang search functions - Je Sen
 '''
 
 from parser import stpcommands
