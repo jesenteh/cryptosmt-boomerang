@@ -1,5 +1,6 @@
 # CryptoSMT-Boomerang
 New module for the CryptoSMT tool to support automatic boomerang search.
+This repository also contains the codes for the related-key attack on WARP (warp-verification)
 
 Instructions:
 1. Install the CryptoSMT tool (https://github.com/kste/cryptosmt) - See installation.txt.
