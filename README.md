@@ -8,7 +8,7 @@ Instructions:
 4. See the examples/warp10-9-boomerang.yaml to understand how to setup and run the boomerang search.
 5. Sample execution:
 ```
-    python3 cryptosmt-boomerang.py --input ./search/twine-7-7-boomerang.yaml
+    python3 cryptosmt-boomerang.py --input ./search/warp10-9-boomerang.yaml
 ```
 7. To use the boomerang search for other ciphers, additional functions need to be added to the cipher definition. See ciphers/warp.py for examples:
 ```
