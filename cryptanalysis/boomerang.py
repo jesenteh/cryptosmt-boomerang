@@ -36,32 +36,32 @@ def computeFeistelBoomerangDifferential(cipher, parameters):
         quit()
     start_time = time.time()
     createBCT(parameters, cipher)
+    #while not search.reachedTimelimit(start_time, parameters["timelimit"]):
+    print("----")
+    print("Running initial boomerang search")
+    print("----")
+    #Finds the input and output differences of the entire boomerang then starts enumerating
+    boomerangProb = feistelBoomerangTrailSearch(cipher, parameters, start_time)
+    #Compute other boomerang trails for the given input and output differences
     while not search.reachedTimelimit(start_time, parameters["timelimit"]):
-        print("----")
-        print("Running initial boomerang search")
-        print("----")
-        #Finds the input and output differences of the entire boomerang then starts enumerating
-        boomerangProb = feistelBoomerangTrailSearch(cipher, parameters, start_time)
-        #Compute other boomerang trails for the given input and output differences
-        while not search.reachedTimelimit(start_time, parameters["timelimit"]):
-            prob = feistelBoomerangTrailSearch(cipher, parameters, start_time, boomerangProb)
-            if prob == 99: #No more upper trails for the given input
-                break
-            elif prob == 0: #No lower trail found for the given limits
-                print("Trying a different upper trail")
-            else:
-                boomerangProb = prob
-                print("---")
-                print("Improved boomerang probability = " + str(math.log(boomerangProb, 2)))
-        print("\n----")
-        print("Boomerang search completed for the following:")
-        print("X0 = {}".format(parameters["boomerangVariables"]["X0"]))
-        print("X{} = {}".format(parameters["lowertrail"], parameters["boomerangVariables"]["X{}".format(parameters["lowertrail"])]))
-        print("Final boomerang probability = " + str(math.log(boomerangProb, 2)))
-        print("----\n")
+        prob = feistelBoomerangTrailSearch(cipher, parameters, start_time, boomerangProb)
+        if prob == 99: #No more upper trails for the given input
+            break
+        elif prob == 0: #No lower trail found for the given limits
+            print("Trying a different upper trail")
+        else:
+            boomerangProb = prob
+            print("---")
+            print("Improved boomerang probability = " + str(math.log(boomerangProb, 2)))
+    print("\n----")
+    print("Boomerang search completed for the following:")
+    print("X0 = {}".format(parameters["boomerangVariables"]["X0"]))
+    print("X{} = {}".format(parameters["lowertrail"], parameters["boomerangVariables"]["X{}".format(parameters["lowertrail"])]))
+    print("Final boomerang probability = " + str(math.log(boomerangProb, 2)))
+    print("----\n")
         
         #Clear the start/end points to start new boomerang search
-        parameters["boomerangVariables"].clear()
+        #parameters["boomerangVariables"].clear()
 
     return 0
 
@@ -142,11 +142,15 @@ def feistelBoomerangTrailSearch(cipher, parameters, timestamp, boomerangProb = 0
                 print("Fixed X{} in boomerang to {}".format(parameters["lowertrail"], parameters["boomerangVariables"]["X{}".format(parameters["lowertrail"])]))
                 print("----")
             #Perform clustering for upper if not done, then cluster lower
-            while diff_upper == 0:
+            while not search.reachedTimelimit(start_time, parameters["timelimit"]) and diff_upper == 0:
                 diff_upper = boomerangDifferential(cipher, parameters, alpha, beta, upperWeight, timestamp, "upper")
             diff_lower = 0
-            while diff_lower == 0:
+            while not search.reachedTimelimit(start_time, parameters["timelimit"]) and diff_lower == 0:
                 diff_lower = boomerangDifferential(cipher, parameters, gamma, delta, lowerWeight, timestamp, "lower")
+
+            if search.reachedTimelimit(start_time, parameters["timelimit"]):
+                return 99
+            
             boomerangProb += diff_upper*diff_upper*diff_lower*diff_lower*switchProb
             print("Found boomerang trail: {}, {}, {}".format(math.log(diff_upper, 2), math.log(diff_lower, 2),math.log(switchProb, 2)))
             print("Boomerang probability: {}".format(math.log(boomerangProb, 2)))
