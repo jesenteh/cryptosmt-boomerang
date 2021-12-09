@@ -9,7 +9,7 @@ from ciphers.cipher import AbstractCipher
 
 class LBlockSCipher(AbstractCipher):
     """
-    Represents the differential behaviour of LBlocks and can be used
+    Represents the differential behaviour of LBlock-s and can be used
     to find differential characteristics for the given parameters.
     """
 
