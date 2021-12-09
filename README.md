@@ -5,7 +5,7 @@ Instructions:
 1. Install the CryptoSMT tool (https://github.com/kste/cryptosmt) - See installation.txt.
 2. Copy all files from this repository into their respective folders. Some of the files include error fixes to existing files to support Feistel ciphers.
 3. Run cryptosmt-boomerang.py instead of cryptosmt.py.
-4. See the input files under "examples" to understand how to setup and run the boomerang search.
+4. See the examples/warp10-9-boomerang.yaml to understand how to setup and run the boomerang search.
 5. Sample execution:
 ```
     python3 cryptosmt-boomerang.py --input ./search/twine-7-7-boomerang.yaml
