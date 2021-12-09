@@ -1,7 +1,7 @@
 '''
 Created on Nov 3, 2021
 
-@author: Je Sen
+@author: jesenteh
 '''
 
 from parser import stpcommands
