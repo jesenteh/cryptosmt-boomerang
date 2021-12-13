@@ -1,7 +1,7 @@
 """
 @author: jesenteh
 Date: 9 December, 2021
-This Python script implements the 25-round key-recovery attack against WARP in the related-key setting.
+This Python script implements the 25-round (15+10) key-recovery attack against WARP in the related-key setting.
 """
 
 from scipy.stats import norm
