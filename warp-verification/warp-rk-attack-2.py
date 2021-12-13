@@ -110,7 +110,7 @@ def main():
     #Number of rounds for the attack
     rounds = 25
     #Number of pairs in log2
-    pairs = 20
+    pairs = 21
     
     #Key    
     K0_1 = 0xFEDCBA9876543210
@@ -134,7 +134,6 @@ def main():
     countedpairs3 = 0
     countedpairs4 = 0
 
-    countmatches = 0
     keyCounter = {}
     highest = 0
 
@@ -190,7 +189,7 @@ def main():
         #Calculate the difference
         #Check the filter to see if the key/pair is valid, discard if not
 
-        # ROUND20
+        # ROUND24
         # To decrypt x24_29 and check if it matches Y23_29, need to guess k0_4 (no key difference) to decrypt X25_9 to obtain Y24_9
         k0_4 = []
         check = 0
@@ -307,61 +306,13 @@ def main():
             continue
         countedpairs4 = countedpairs4 + 1
 
-    #     # #ROUND23
-    #     # #Calculate X23_31 = X24_26 = Y24_19, we guess k0_9 (no key difference) to decrypt X25_19
-    #     # #To calculate X23_30 = Y23_7, we need to first guess k0_10 to decrypt X25_21, then guess k1_3 to decrypt X24_7
-    #     # #TODO: Nested for loops for all 3 keys, valid combinations are included into a list containing [k0_9, k0_10, k1_3]. 
-    #     # #At this point, there are 2^14 remaining combinations of pairs associated with 24 guessed key bits. Can already do counting.
-    #     K23 = []
-    #     check = 0
-    #     #k0_9
-    #     for k1 in range (0, int(math.pow(2,4))):
-    #         #Decrypt m1
-    #         x23_31_1 = decryptNibble(m1[18], m1[19], k1, 25, 18)
-    #         #Decrypt m2
-    #         x23_31_2 = decryptNibble(m2[18], m2[19], k1, 25, 18)
-
-    #         #k0_10
-    #         for k2 in range (0, int(math.pow(2,4))):
-    #             #Decrypt m1
-    #             x24_6_1 = decryptNibble(m1[20], m1[21], k2, 25, 20)
-    #             #Decrypt m2
-    #             x24_6_2 = decryptNibble(m2[20], m2[21], k2, 25, 20)
-
-    #             x24_7_1 = m1[8]
-    #             x24_7_2 = m2[8]
-
-    #             #k1_3
-    #             for k3 in range (0, int(math.pow(2,4))):
-    #                 #Decrypt X24
-    #                 x23_30_1 = decryptNibble(x24_6_1, x24_7_1, k3, 24, 6)
-    #                 #Decrypt X24
-    #                 x23_30_2 = decryptNibble(x24_6_2, x24_7_2, k3, 24, 6)
-
-    #                 tempkey = []
-    #                 #Check for surviving pairs
-    #                 if ( (s[x23_30_1] ^ s[x23_30_2]) ^ (x23_31_1 ^ x23_31_2) == 0):
-    #                     #If pair is valid, store key, we still expect the same number of pairs (2^14) - 
-    #                     tempkey.append(k1)
-    #                     tempkey.append(k2)
-    #                     tempkey.append(k3)
-    #                     K23.append(tempkey)
-    #                     combinations3 = combinations3 + len(k0_4)*len(k0_8)*len(k0_15)
-    #                     check = check + 1 
-    #     if check == 0:
-    #         #If no key+pair fulfils difference, discard
-    #         continue
-    #     countedpairs3 = countedpairs3 + 1
-
-    #     #Count the keys for each pair
-    #     #Create index
+        #Count the keys for each pair
+        #Create index
         for k0 in k0_4:
             for k1 in k0_7:   
                 for k2 in k0_1:
                     for k3 in k0_10:
                         for k4 in k0_14:
-                            if k0==4 and k1==7 and k2==1 and k3==0xA and k4==0xE:
-                                countmatches = countmatches+1
                             temp = "{:x}{:x}{:x}{:x}{:x}".format(k0, k1, k2, k3, k4)
                             index = int(temp, base=16)
                             if index not in keyCounter:
@@ -372,6 +323,7 @@ def main():
                                 keyCounter[index]=keyCounter[index]+1
                                 if highest < keyCounter[index]:
                                     highest = keyCounter[index]
+
 
     print("Number of input pairs = 2^{}".format(pairs))
     if filteredpairs == 0:
@@ -400,17 +352,13 @@ def main():
     print("Number of combinations after fifth guess = 2^{}".format(math.log(combinations4,2)))
     print("")
 
-    print("Counter for the right key = 2^{}".format(math.log(countmatches,2)))
-
-
     counter = 0
     for key in keyCounter:
         if keyCounter[key] == highest:
-            # print(hex(key))
             counter = counter+1
 
     print("Highest counter = {}, Number of keys with the counter = {}, Target key counter = {}".format(highest, counter, keyCounter[0x471AE]))
-    print("Length of key counter = {}".format(len(keyCounter)))
+    print("Length of key counter = 2^{}".format(math.log(len(keyCounter),2)))
 
 
 
