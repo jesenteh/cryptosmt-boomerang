@@ -1,11 +1,21 @@
 """
 @author: jesenteh
 Date: 9 December, 2021
-This Python script implements the 25-round (19+6) key-recovery attack against WARP in the related-key setting.
+This Python script implements the (r+6)-round key-recovery attack against WARP in the related-key setting
+Related-key trail (i=3, x=1, y=2) - See paper
+Distinguisher length, r must be an odd number (r=3,5,7,..,35)
+For fast verification, use 9+6=15 rounds (9-round distinguisher 2^-8) and 2^12 pairs
+For 25-round verification, change rounds to 25 and set to 2^21 or 2^22 pairs
 """
 
 from scipy.stats import norm
 import math, random
+
+
+#Number of rounds for the attack
+rounds = 15
+#Number of pairs in log2
+pairs = 12
 
 #Constants, S-box, Permutation
 rc0 = [0, 0, 1, 3, 7, 0xf, 0xf, 0xf, 0xe, 0xd, 0xa, 5, 0xa, 5, 0xb, 6, 0xc, 9, 3, 6, 0xd, 0xb, 7, 0xe, 0xd, 0xb, 6, 0xd, 0xa, 4, 9, 2, 4, 9, 3, 7, 0xe, 0xc, 8, 1, 2]
@@ -97,7 +107,6 @@ def decryptNibble(x0, x1, key, round, index):
     return val
 
 
-
 def main():
     """
     Note:
@@ -107,10 +116,6 @@ def main():
     The printHex function will iterate and print each element in the list from 0 to 31 (following the original WARP paper).
     """
 
-    #Number of rounds for the attack
-    rounds = 25
-    #Number of pairs in log2
-    pairs = 21
     
     #Key    
     K0_1 = 0xFEDCBA9876543210
@@ -122,32 +127,25 @@ def main():
 
 
     numpairs = int(math.pow(2,pairs))
-    filteredpairs = 0
-    combinations0 = 0
-    combinations1 = 0
-    combinations3 = 0
-    combinations4 = 0
-    countedpairs0 = 0
-    countedpairs1 = 0
-    countedpairs3 = 0
-    countedpairs4 = 0
 
+    #Variables to keep track of pairs after filtering and number of pairs+key combinations
+    filteredpairs = 0
+    combinations=[0,0,0,0]
+    #Key counters and variable to keep track of the number of keys with the highest count in the key counter
     keyCounter0 = {}
     keyCounter1 = {}
+    keyCounter2 = {}
     keyCounter3 = {}
-    keyCounter4 = {}
-    highest0 = 0
-    highest1 = 0
-    highest3 = 0
-    highest4 = 0
-
-    """
-    In the following, each pair will be associated to the guessed keys, and discarded if it is not valid. 
-    Each remaining pair will then vote for the candidate keys associated with it.
-    """
-    #Generate pairs
+    highest=[0,0,0,0]
+    #Variables to store plaintexts after encryption
     m1 = []
     m2 = []
+
+    """
+    In the following, we encrypt each pair and perform the guess-and-determine procedure.
+    We will not store the plaintext-ciphertext pairs.
+    """
+    
     for i in range (0, numpairs):
         #Randomly generate the first plaintext
         p0_1 = random.getrandbits(64)
@@ -187,14 +185,21 @@ def main():
         if invalid == 1:
             continue
 
+        #If pair survives, increment the number of filtered pairs
         filteredpairs = filteredpairs+1 
 
-        #Guess key to perform decryption in the previous round
-        #Calculate the difference
-        #Check the filter to see if the key/pair is valid, discard if not
+        """
+        Guess and determine procedure begins here, which will be performed for the subround filters 
+        of the penultimate round.
+        Guess keys from the final round to calculate the nibble that goes through the S-box in the 
+        subround filter.
+        Calculate the other nibble involved in the subround filter directly from the ciphertext pair
+        Check the filter to see if the key/pair is valid, discard if not.
+        """
 
-        # ROUND24
-        # To decrypt x24_29 and check if it matches Y23_29, need to guess k0_4 (no key difference) to decrypt X25_9 to obtain Y24_9
+        # ROUND (rounds-1)
+        # To decrypt x(rounds-1)_29 and check if it matches Y(rounds-2)_29, 
+        # need to guess k0_4 (no key difference) to decrypt X(rounds)_9 to obtain Y(rounds)_9
         k0_4 = []
         check = 0
         for k in range (0, int(math.pow(2,4))):
@@ -208,17 +213,17 @@ def main():
 
             #Check for surviving pairs
             if ( (s[x0_1] ^ s[x0_2]) ^ (x1_1 ^ x1_2) == 0):
-                #If pair is valid, store key, we still expect the same number of pairs (2^14) - Correct
+                #If pair is valid, store key
                 k0_4.append(k)
-                combinations0 = combinations0 + 1
+                combinations[0] = combinations[0] + 1
                 check = check + 1
         if check == 0: 
             #If no key+pair fulfils difference, discard
             continue
-        countedpairs0 = countedpairs0 + 1
 
         
-        #To decrypt x24_17 and check if it matches Y23_17, need to guess k0_7 (key difference = 1) to decrypt X25_15 to obtain Y24_15
+        # To decrypt x(rounds-1)_17 and check if it matches Y(rounds-2)_17,
+        # need to guess k0_7 (key difference = 1) to decrypt X(rounds)_15 to obtain Y(rounds)_15
         k0_7 = []
         check = 0
         for k in range (0, int(math.pow(2,4))):
@@ -232,16 +237,15 @@ def main():
 
             #Check for surviving pairs
             if ( (s[x0_1] ^ s[x0_2]) ^ (x1_1 ^ x1_2) == 0):
-                #If pair is valid, store key, we still expect the same number of pairs (2^14) - 
+                #If pair is valid, store key
                 k0_7.append(k)
-                combinations1 = combinations1 + 1
+                combinations[1] = combinations[1] + 1
                 check = check + 1 
         if check == 0:
             #If no key+pair fulfils difference, discard
             continue
-        countedpairs1 = countedpairs1 + 1
 
-        #To decrypt x24_7 and check if it matches Y23_7, guess k0_10 with no key difference
+        #To decrypt x(rounds-1)_7 and check if it matches Y(rounds-2)_7, guess k0_10 with no key difference
         k0_10 = []
         check = 0
         for k in range (0, int(math.pow(2,4))):
@@ -255,17 +259,15 @@ def main():
 
             #Check for surviving pairs
             if ( (s[x0_1] ^ s[x0_2]) ^ (x1_1 ^ x1_2) == 0):
-                #If pair is valid, store key, we still expect the same number of pairs (2^14) - 
+                #If pair is valid, store key
                 k0_10.append(k)
-                # combinations3 = combinations3 + len(k0_4)*len(k0_7)*len(k0_1)
-                combinations3 = combinations3 + 1
+                combinations[2] = combinations[2] + 1
                 check = check + 1 
         if check == 0:
             #If no key+pair fulfils difference, discard
             continue
-        countedpairs3 = countedpairs3 + 1
 
-        #To decrypt x24_3 and check if it matches Y23_3, guess k0_14 with no key difference
+        #To decrypt x(rounds-1)_3 and check if it matches Y(rounds-2)_3, guess k0_14 with no key difference
         k0_14 = []
         check = 0
         for k in range (0, int(math.pow(2,4))):
@@ -279,65 +281,57 @@ def main():
 
             #Check for surviving pairs
             if ( (s[x0_1] ^ s[x0_2]) ^ (x1_1 ^ x1_2) == 0):
-                #If pair is valid, store key, we still expect the same number of pairs (2^14) - 
+                #If pair is valid, store key
                 k0_14.append(k)
-                # combinations4 = combinations4 + len(k0_4)*len(k0_7)*len(k0_1)*len(k0_10)
-                combinations4 = combinations4 + 1
+                combinations[3] = combinations[3] + 1
                 check = check + 1 
         if check == 0:
             #If no key+pair fulfils difference, discard
             continue
-        countedpairs4 = countedpairs4 + 1
 
         # Count the keys for each pair
         # Create index
-        for k0 in k0_4:
-            temp = "{:x}".format(k0)
-            index = int(temp, base=16)
+        key_index = [4,7,10,14]
+
+        for index in k0_4:
             if index not in keyCounter0:
                 keyCounter0[index]=1
-                if highest0 < keyCounter0[index]:
-                    highest0 = keyCounter0[index]
+                if highest[0] < keyCounter0[index]:
+                    highest[0] = keyCounter0[index]
             else:
                 keyCounter0[index]=keyCounter0[index]+1
-                if highest0 < keyCounter0[index]:
-                    highest0 = keyCounter0[index]   
+                if highest[0] < keyCounter0[index]:
+                    highest[0] = keyCounter0[index]   
 
-        for k1 in k0_7:   
-            temp = "{:x}".format(k1)
-            index = int(temp, base=16)
+        for index in k0_7:   
             if index not in keyCounter1:
                 keyCounter1[index]=1
-                if highest1 < keyCounter1[index]:
-                    highest1 = keyCounter1[index]
+                if highest[1] < keyCounter1[index]:
+                    highest[1] = keyCounter1[index]
             else:
                 keyCounter1[index]=keyCounter1[index]+1
-                if highest1 < keyCounter1[index]:
-                    highest1 = keyCounter1[index]   
+                if highest[1] < keyCounter1[index]:
+                    highest[1] = keyCounter1[index]   
         
-        for k3 in k0_10:
-            temp = "{:x}".format(k3)
-            index = int(temp, base=16)
+        for index in k0_10:
+            if index not in keyCounter2:
+                keyCounter2[index]=1
+                if highest[2] < keyCounter2[index]:
+                    highest[2] = keyCounter2[index]
+            else:
+                keyCounter2[index]=keyCounter2[index]+1
+                if highest[2] < keyCounter2[index]:
+                    highest[2] = keyCounter2[index]  
+        
+        for index in k0_14:
             if index not in keyCounter3:
                 keyCounter3[index]=1
-                if highest3 < keyCounter3[index]:
-                    highest3 = keyCounter3[index]
+                if highest[3] < keyCounter3[index]:
+                    highest[3] = keyCounter3[index]
             else:
                 keyCounter3[index]=keyCounter3[index]+1
-                if highest3 < keyCounter3[index]:
-                    highest3 = keyCounter3[index]  
-        
-        for k4 in k0_14:
-            temp = "{:x}".format(k4)
-            index = int(temp, base=16)
-            if index not in keyCounter4:
-                keyCounter4[index]=1
-                if highest4 < keyCounter4[index]:
-                    highest4 = keyCounter4[index]
-            else:
-                keyCounter4[index]=keyCounter4[index]+1
-                if highest4 < keyCounter4[index]:
-                    highest4 = keyCounter4[index]  
+                if highest[3] < keyCounter3[index]:
+                    highest[3] = keyCounter3[index]  
      
 
 
@@ -345,52 +339,41 @@ def main():
     if filteredpairs == 0:
         print("No pairs found.")
         quit()
+
     print("Step 1: Valid pairs after filtering Round {} = 2^{}".format(rounds, math.log(filteredpairs,2)))
     print("")
 
-    print("Valid pairs after first guess = 2^{}".format(math.log(countedpairs0,2)))
-    print("Number of combinations after first guess = 2^{}".format(math.log(combinations0,2)))
-    print("")
+    for i in range (0,4):
+        print("Number of combinations for key #{}= 2^{}".format(i,math.log(combinations[0],2)))
 
-    print("Valid pairs after second guess = 2^{}".format(math.log(countedpairs1,2)))
-    print("Number of combinations after second guess = 2^{}".format(math.log(combinations1,2)))
-    print("")
-
-    print("Valid pairs after third guess = 2^{}".format(math.log(countedpairs3,2)))
-    print("Number of combinations after third guess = 2^{}".format(math.log(combinations3,2)))
-    print("")
-
-    print("Valid pairs after fourth guess = 2^{}".format(math.log(countedpairs3,2)))
-    print("Number of combinations after fourth guess = 2^{}".format(math.log(combinations3,2)))
-    print("")
 
     counter = 0
     for key in keyCounter0:
-        if keyCounter0[key] == highest0:
+        if keyCounter0[key] == highest[0]:
             counter = counter+1    
-    print("Highest counter = {}, Number of keys with the counter = {}, Target key counter = {}".format(highest0, counter, keyCounter0[0x4]))
+    print("Highest counter = {}, Number of keys with the counter = {}, Target key counter = {}".format(highest[0], counter, keyCounter0[0x4]))
     print("Length of key counter = 2^{}".format(math.log(len(keyCounter0),2)))
 
     counter = 0
     for key in keyCounter1:
-        if keyCounter1[key] == highest1:
+        if keyCounter1[key] == highest[1]:
             counter = counter+1    
-    print("Highest counter = {}, Number of keys with the counter = {}, Target key counter = {}".format(highest1, counter, keyCounter1[0x7]))
+    print("Highest counter = {}, Number of keys with the counter = {}, Target key counter = {}".format(highest[1], counter, keyCounter1[0x7]))
     print("Length of key counter = 2^{}".format(math.log(len(keyCounter1),2)))
 
     counter = 0
-    for key in keyCounter3:
-        if keyCounter3[key] == highest3:
+    for key in keyCounter2:
+        if keyCounter2[key] == highest[2]:
             counter = counter+1    
-    print("Highest counter = {}, Number of keys with the counter = {}, Target key counter = {}".format(highest3, counter, keyCounter3[0xA]))
-    print("Length of key counter = 2^{}".format(math.log(len(keyCounter3),2)))
+    print("Highest counter = {}, Number of keys with the counter = {}, Target key counter = {}".format(highest[2], counter, keyCounter2[0xA]))
+    print("Length of key counter = 2^{}".format(math.log(len(keyCounter2),2)))
 
     counter = 0
-    for key in keyCounter4:
-        if keyCounter4[key] == highest4:
+    for key in keyCounter3:
+        if keyCounter3[key] == highest[3]:
             counter = counter+1    
-    print("Highest counter = {}, Number of keys with the counter = {}, Target key counter = {}".format(highest4, counter, keyCounter4[0xE]))
-    print("Length of key counter = 2^{}".format(math.log(len(keyCounter4),2)))
+    print("Highest counter = {}, Number of keys with the counter = {}, Target key counter = {}".format(highest[3], counter, keyCounter3[0xE]))
+    print("Length of key counter = 2^{}".format(math.log(len(keyCounter3),2)))
 
 
 if __name__ == '__main__':
