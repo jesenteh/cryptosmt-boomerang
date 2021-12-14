@@ -2,7 +2,7 @@
 @author: jesenteh
 Date: 9 December, 2021
 This Python script implements WARP and checks its correctness by using the test vectors provided in WARP's design specification.
-It also computationally verifies the differential probability of a 15-round related-key differential found for WARP.
+It also computationally verifies the differential probability of a odd-round (3 to 41) related-key differential found for WARP.
 """
 
 from scipy.stats import norm
@@ -180,9 +180,9 @@ def main():
 
     #Verify
     rounds = 15 #Odd rounds 3,5,7,...,41
-    print("\nVerification for {}-round related-key trail with expected probability of ".format(rounds))
+    print("\nVerification for {}-round related-key trail with expected probability of 2^({})".format(rounds,rounds-1))
     #In log2
-    numpairs = 18
+    numpairs = 16
     verifyRK(numpairs, rounds)
 
 
