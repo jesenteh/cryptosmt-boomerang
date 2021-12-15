@@ -82,10 +82,16 @@ def enc(p1, p0, k1, k0, rounds):
             p = roundFunc(p, K1, r, rounds)
     return p
 
-def checkDiff(diff):
+def checkDiff(diff,rounds):
+
     #Target difference
-    p0 = 0x0000010000000000
-    p1 = 0x0000000000000000
+    if (rounds%2!=0):
+        p0 = 0x0000010000000000
+        p1 = 0x0000000000000000
+    else:
+        p0 = 0x0000000000001000
+        p1 = 0x0000000000000000
+
 
     mask = 0xF
     p = []
@@ -100,10 +106,10 @@ def checkDiff(diff):
     return p==diff
 
 def verifyRK(pairs, rounds):
-    #Key
-    k0_1 = 0xFEDCBA9876543210
-    k1_1 = 0x0123456789ABCDEF
 
+    # #Key
+    k0_1 = random.getrandbits(64)
+    k1_1 = random.getrandbits(64)
     #Related key
     k0_2 = k0_1 ^ 0x0000000010000010
     k1_2 = k1_1 ^ 0x0000000000200000
@@ -138,7 +144,7 @@ def verifyRK(pairs, rounds):
             diff[perm[i]]=temp[i]
 
         #Check difference and increment counter
-        countpairs = countpairs + checkDiff(diff)
+        countpairs = countpairs + checkDiff(diff,rounds)
     print("Number of input pairs = 2^{}".format(pairs))
     print("Valid pairs = 2^{}".format(math.log(countpairs,2)))
     print("Differential probability = 2^{}".format(math.log(countpairs,2)-pairs))
