@@ -15,7 +15,7 @@ import math, random
 #Number of rounds for the attack
 rounds = 15
 #Number of pairs in log2
-pairs = 12
+pairs = 10
 
 #Constants, S-box, Permutation
 rc0 = [0, 0, 1, 3, 7, 0xf, 0xf, 0xf, 0xe, 0xd, 0xa, 5, 0xa, 5, 0xb, 6, 0xc, 9, 3, 6, 0xd, 0xb, 7, 0xe, 0xd, 0xb, 6, 0xd, 0xa, 4, 9, 2, 4, 9, 3, 7, 0xe, 0xc, 8, 1, 2]
@@ -188,11 +188,7 @@ def main():
         filter = [0,16,22,26,30]
         invalid = 0
         for i in filter:
-            if (m1[0] ^ m2[0]) != 0:
-                #If pair is invalid, discard
-                invalid = 1
-                break
-            if ( (s[m1[0]]^s[m2[0]]) ^ (m1[1] ^ m2[1]) != 0):
+            if ( (s[m1[i]]^s[m2[i]]) ^ (m1[i+1] ^ m2[i+1]) != 0):
                 #If pair is invalid, discard
                 invalid = 1
                 break
