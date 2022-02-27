@@ -141,9 +141,7 @@ class LBlockSCipher(AbstractCipher):
         command += "ASSERT(0x00000000 = {0}[63:32]);\n".format(f)
         command += "ASSERT(0x00000000 = {0}[63:32]);\n".format(r)
 
-        #Permutation Layer
-        # pi = [5, 0, 1, 4, 7, 0xC, 3, 8, 0xD, 6, 9, 2, 0xF, 0xA, 0xB, 0xE]
-        # 1 word = 4 bit
+        #Complete Feistel operation
         command += "ASSERT({0}[3:0]   = {1}[35:32]);\n".format(p, x_out)	#0 -> 8
         command += "ASSERT({0}[7:4]   = {1}[39:36]);\n".format(p, x_out)	#1 -> 9
         command += "ASSERT({0}[11:8]  = {1}[43:40]);\n".format(p, x_out)	#2 -> 10
