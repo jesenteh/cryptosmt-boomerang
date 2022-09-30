@@ -1,4 +1,7 @@
-sudo apt-get update && sudo apt-get install -y git build-essential cmake wget curl
+
+### Essential Step (before installing):
+### sudo apt-get update && sudo apt-get install -y git build-essential cmake wget curl
+### Remember to sudo all commands
 
 1. Go to home directory and make a directory called "tools" to store all the folders:
 
